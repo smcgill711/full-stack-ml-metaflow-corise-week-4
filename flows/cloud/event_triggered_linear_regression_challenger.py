@@ -37,7 +37,10 @@ class TaxiFarePrediction(FlowSpec):
         for f in obviously_bad_data_filters:
             df = df[f]
         print('Ending Data Size: {0}'.format(len(df)))
-        #df = df[~(df['trip_distance'].isnull())] # Remove missing values from dataset
+        # Add Transformed Features
+        df['trip_sq'] = df['trip_distance']*df['trip_distance']
+        df['pass_sq'] = df['passenger_count']*df['passenger_count']
+        df['trip_pass_int'] = df['trip_distance']*df['passenger_count']
 
         return df
 
@@ -51,7 +54,8 @@ class TaxiFarePrediction(FlowSpec):
         # NOTE: we are split into training and validation set in the validation step which uses cross_val_score.
         # This is a simple/naive way to do this, and is meant to keep this example simple, to focus learning on deploying Metaflow flows.
         # In practice, you want split time series data in more sophisticated ways and run backtests.
-        self.X = self.df[["trip_distance", "passenger_count"]]
+        self.X = self.df[["trip_distance", "passenger_count", 
+                          "trip_sq", "pass_sq", "trip_pass_int"]]
         self.y = self.df["total_amount"].values
         print("Missing Value count is {} for trip distance".format(sum(self.df["trip_distance"].isnull())))
         print("Missing Value count is {} for y".format(sum(self.df["total_amount"].isnull())))
